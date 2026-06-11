@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build files
+build/
+*.bin
+*.elf
+*.map
+.ninja_deps
+.ninja_log
+CMakeCache.txt
+
+# IDE
+.vscode/
+.devcontainer/
+.clangd/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Music files (too large, not needed for code repo)
+music/*.mp3
+
+# Temp files
+*.tmp
+*.log

@@ -1,0 +1,85 @@
+# ESP32 PWM Servo Driver 项目所需库
+
+## 必需的Arduino库
+
+### 1. Adafruit PWM Servo Driver Library
+- **库名称**: Adafruit PWM Servo Driver Library
+- **安装方法**: 
+  - 打开Arduino IDE
+  - 工具 -> 管理库
+  - 搜索 "Adafruit PWM Servo Driver"
+  - 安装 "Adafruit PWM Servo Driver Library" by Adafruit
+- **版本**: 2.4.1 或更高版本
+- **GitHub**: https://github.com/adafruit/Adafruit-PWM-Servo-Driver-Library
+
+### 2. MPU6050 Library
+- **库名称**: MPU6050
+- **安装方法**: 
+  - 打开Arduino IDE
+  - 工具 -> 管理库
+  - 搜索 "MPU6050"
+  - 安装 "MPU6050" by Electronic Cats 或 "MPU6050" by Jeff Rowberg
+- **版本**: 1.0.0 或更高版本
+- **GitHub**: https://github.com/ElectronicCats/mpu6050
+
+### 3. Wire Library
+- **库名称**: Wire
+- **说明**: Arduino内置库，用于I2C通信
+- **安装**: 无需安装，Arduino IDE自带
+
+## 硬件要求
+
+### ESP32开发板
+- ESP32 DevKit V1 或类似开发板
+- 支持Arduino IDE的ESP32开发板包
+
+### Adafruit PWM Servo Driver
+- **型号**: PCA9685 16-Channel PWM/Servo Driver
+- **I2C地址**: 0x40 (默认)
+- **工作电压**: 3.3V - 5V
+- **PWM频率**: 40Hz - 1000Hz (推荐50Hz用于舵机)
+
+### MPU6050传感器
+- **型号**: MPU6050 6轴陀螺仪+加速度计
+- **I2C地址**: 0x68 (默认)
+- **工作电压**: 3.3V - 5V
+- **通信接口**: I2C
+- **功能**: 姿态检测、角度测量
+
+### 舵机
+- **类型**: 标准PWM舵机 (SG90, MG996R等)
+- **工作电压**: 4.8V - 6V
+- **控制信号**: PWM 0.5ms - 2.5ms (对应0° - 180°)
+- **数量**: 1个 (本项目使用1个)
+
+## 连接说明
+
+### ESP32 与 传感器/驱动板连接
+```
+ESP32          PWM Servo Driver    MPU6050
+-----          ----------------    -------
+3.3V    ->     VCC                 VCC
+GND     ->     GND                 GND
+GPIO21  ->     SDA                 SDA
+GPIO22  ->     SCL                 SCL
+```
+
+### PWM Servo Driver 与 舵机连接
+```
+PWM Servo Driver    舵机
+-----------------   ----
+V+ (5V)         ->  红色线 (电源正极)
+GND             ->  黑色/棕色线 (电源负极)
+PWM0            ->  黄色/白色线 (信号线)
+```
+
+## 电源要求
+- **ESP32**: 3.3V (通过USB或外部电源)
+- **PWM Servo Driver**: 3.3V - 5V
+- **舵机**: 4.8V - 6V (建议使用外部5V电源)
+
+## 注意事项
+1. 确保所有设备共地 (GND连接)
+2. 舵机电源建议使用外部5V电源，避免从ESP32取电
+3. 如果使用多个舵机，确保电源能够提供足够的电流
+4. I2C地址可以通过跳线修改 (0x40 - 0x47)

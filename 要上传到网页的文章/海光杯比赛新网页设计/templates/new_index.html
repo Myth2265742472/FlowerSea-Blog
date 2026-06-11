@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>机械臂视觉检测系统 - 完整参数版(含尺寸)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #fff;
+        }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        header {
+            text-align: center;
+            padding: 25px 0;
+            border-bottom: 2px solid #0f3460;
+            margin-bottom: 25px;
+        }
+        header h1 {
+            font-size: 2.2em;
+            color: #00d9ff;
+            text-shadow: 0 0 10px rgba(0, 217, 255, 0.5);
+        }
+        header p { color: #888; margin-top: 8px; }
+
+        .status-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+        .status-item {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .status-item .label { color: #888; font-size: 0.85em; margin-bottom: 6px; }
+        .status-item .value { font-size: 1.2em; font-weight: bold; color: #00d9ff; }
+        .status-item.connected .value { color: #00ff88; }
+        .status-item.disconnected .value { color: #ff4444; }
+        .status-item.warning .value { color: #ffaa00; }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .panel {
+            background: #0f3460;
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .panel-title {
+            color: #00d9ff;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #1a1a2e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .video-wrapper img {
+            width: 100%;
+            border-radius: 8px;
+            background: #000;
+        }
+
+        .detection-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .det-card {
+            background: #1a1a2e;
+            border-radius: 8px;
+            padding: 12px;
+            border-left: 4px solid #00d9ff;
+        }
+        .det-card.defect { border-left-color: #ff4444; }
+        .det-card.good { border-left-color: #00ff88; }
+        .det-card .type { font-weight: bold; margin-bottom: 6px; font-size: 1em; }
+        .det-card .info { color: #888; font-size: 0.85em; }
+        .det-card .confidence { color: #00d9ff; margin-top: 4px; }
+        .det-card .size-info { color: #ffaa00; margin-top: 4px; font-size: 0.9em; }
+        .det-card .area-info { color: #ff6b6b; margin-top: 2px; font-size: 0.85em; }
+        .det-card .location { color: #666; font-size: 0.8em; margin-top: 4px; }
+        .det-card .time { color: #555; font-size: 0.75em; margin-top: 4px; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #0f3460;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-card .icon { font-size: 2em; margin-bottom: 8px; }
+        .stat-card .count { font-size: 2em; font-weight: bold; color: #00d9ff; }
+        .stat-card .label { color: #888; font-size: 0.9em; margin-top: 5px; }
+        .stat-card.success .count { color: #00ff88; }
+        .stat-card.danger .count { color: #ff4444; }
+
+        .defect-dist {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+        .defect-item {
+            background: #1a1a2e;
+            padding: 10px 20px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .defect-item .name { color: #ff6b6b; }
+        .defect-item .count { background: #ff4444; padding: 2px 10px; border-radius: 10px; font-size: 0.85em; }
+
+        .sample-size-box {
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+            border: 2px solid #00d9ff;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .sample-size-item { text-align: center; }
+        .sample-size-item .label { color: #888; font-size: 0.9em; }
+        .sample-size-item .value { color: #00ff88; font-size: 1.8em; font-weight: bold; margin-top: 5px; }
+        .sample-size-item .unit { color: #00d9ff; font-size: 0.9em; }
+
+        .size-table-container {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        .size-table { width: 100%; border-collapse: collapse; }
+        .size-table th, .size-table td {
+            padding: 10px 8px;
+            text-align: center;
+            border-bottom: 1px solid #1a1a2e;
+            font-size: 0.9em;
+        }
+        .size-table th { background: #1a1a2e; color: #00d9ff; }
+        .size-table tr:hover { background: #1a1a2e; }
+        .size-value { color: #ffaa00; font-weight: bold; }
+        .area-value { color: #ff6b6b; }
+
+        .arm-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .joint-card {
+            background: #1a1a2e;
+            padding: 15px 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .joint-card .joint-name { color: #888; font-size: 0.8em; }
+        .joint-card .joint-value { color: #00d9ff; font-size: 1.4em; font-weight: bold; margin-top: 5px; }
+        .gripper-status {
+            margin-top: 15px;
+            padding: 15px;
+            background: #1a1a2e;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .gripper-item { text-align: center; }
+        .gripper-item .label { color: #888; font-size: 0.85em; }
+        .gripper-item .value { color: #00ff88; font-size: 1.2em; font-weight: bold; margin-top: 5px; }
+
+        .control-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+        .btn {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-primary { background: #00d9ff; color: #1a1a2e; }
+        .btn-danger { background: #ff4444; color: #fff; }
+        .btn-success { background: #00ff88; color: #1a1a2e; }
+        .btn:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+
+        .upload-area {
+            border: 2px dashed #00d9ff;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin-top: 15px;
+        }
+        .upload-area input[type="file"] { margin: 15px 0; }
+        .preview-area { margin-top: 15px; text-align: center; }
+        .preview-area img { max-width: 100%; max-height: 300px; border-radius: 8px; }
+
+        .results-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .results-table th, .results-table td {
+            padding: 10px 8px;
+            text-align: left;
+            border-bottom: 1px solid #1a1a2e;
+            font-size: 0.9em;
+        }
+        .results-table th { background: #1a1a2e; color: #00d9ff; }
+        .results-table tr:hover { background: #1a1a2e; }
+        .badge { padding: 3px 10px; border-radius: 10px; font-size: 0.8em; }
+        .badge-good { background: #00ff88; color: #1a1a2e; }
+        .badge-defect { background: #ff4444; color: #fff; }
+
+        .api-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .api-item {
+            background: #1a1a2e;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border-left: 3px solid #00d9ff;
+        }
+        .api-item .endpoint { color: #00ff88; font-family: monospace; font-size: 0.9em; }
+        .api-item .desc { color: #888; font-size: 0.8em; margin-top: 3px; }
+
+        .json-response {
+            background: #0a0a15;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow: auto;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 0.85em;
+            white-space: pre-wrap;
+            color: #00ff88;
+        }
+
+        .detection-image-section {
+            margin-top: 20px;
+        }
+        .detection-image-wrapper {
+            position: relative;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .detection-image-wrapper img {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            border-top: 1px solid #0f3460;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 1000px) {
+            .main-grid, .control-section { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .arm-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 机械臂视觉检测系统 - 完整参数版(含尺寸)</h1>
+            <p>数据源: http://172.16.68.111:8080 | 本地端口: 7788</p>
+        </header>
+
+        <div class="status-bar">
+            <div class="status-item" id="connBox">
+                <div class="label">服务器连接</div>
+                <div class="value" id="connStatus">检测中...</div>
+            </div>
+            <div class="status-item" id="videoBox">
+                <div class="label">视频流状态</div>
+                <div class="value" id="videoStatus">检测中...</div>
+            </div>
+            <div class="status-item" id="detectionBox">
+                <div class="label">检测服务</div>
+                <div class="value" id="detectionStatus">检测中...</div>
+            </div>
+            <div class="status-item">
+                <div class="label">更新时间</div>
+                <div class="value" id="lastUpdate">--:--:--</div>
+            </div>
+            <div class="status-item">
+                <div class="label">本机端口</div>
+                <div class="value">7788</div>
+            </div>
+        </div>
+
+        <div class="sample-size-box">
+            <div class="sample-size-item">
+                <div class="label">📐 样品宽度</div>
+                <div class="value" id="sampleWidth">100<span class="unit">mm</span></div>
+            </div>
+            <div class="sample-size-item">
+                <div class="label">📐 样品高度</div>
+                <div class="value" id="sampleHeight">80<span class="unit">mm</span></div>
+            </div>
+            <div class="sample-size-item">
+                <div class="label">📊 样品面积</div>
+                <div class="value" id="sampleArea">8000<span class="unit">mm²</span></div>
+            </div>
+            <div class="sample-size-item">
+                <div class="label">🔬 像素转换比</div>
+                <div class="value">0.1<span class="unit">mm/px</span></div>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon">📦</div>
+                <div class="count" id="totalCount">0</div>
+                <div class="label">检测总数</div>
+            </div>
+            <div class="stat-card success">
+                <div class="icon">✅</div>
+                <div class="count" id="qualifiedCount">0</div>
+                <div class="label">合格品</div>
+            </div>
+            <div class="stat-card danger">
+                <div class="icon">❌</div>
+                <div class="count" id="unqualifiedCount">0</div>
+                <div class="label">不合格品</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">📈</div>
+                <div class="count" id="passRate">0%</div>
+                <div class="label">合格率</div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">📊 缺陷类型分布</div>
+            <div class="defect-dist" id="defectDist">
+                <div class="defect-item">
+                    <span class="name">擦伤</span>
+                    <span class="count" id="ca_shang">0</span>
+                </div>
+                <div class="defect-item">
+                    <span class="name">真空</span>
+                    <span class="count" id="zhen_kong">0</span>
+                </div>
+                <div class="defect-item">
+                    <span class="name">脏污</span>
+                    <span class="count" id="zang_wu">0</span>
+                </div>
+                <div class="defect-item">
+                    <span class="name">折皱</span>
+                    <span class="count" id="zhe_zhou">0</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="panel">
+                <div class="panel-title">📹 实时视频流</div>
+                <div class="video-wrapper">
+                    <img id="videoStream" src="{{ url_for('video_feed') }}" alt="视频流">
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">🔍 最新检测结果</div>
+                <div class="detection-grid" id="detectionList">
+                    <div class="det-card">
+                        <div class="type">等待检测...</div>
+                        <div class="info">暂无数据</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel detection-image-section">
+            <div class="panel-title">🖼️ 检测图片(含尺寸标注)</div>
+            <div class="detection-image-wrapper">
+                <img id="detectionImageWithSize" src="/detection_image_with_size" alt="检测图片">
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">📏 缺陷尺寸详情表</div>
+            <div class="size-table-container">
+                <table class="size-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>缺陷类型</th>
+                            <th>宽度(mm)</th>
+                            <th>高度(mm)</th>
+                            <th>面积(mm²)</th>
+                            <th>占比(%)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sizeTableBody">
+                        <tr><td colspan="6" style="text-align:center;color:#888;">暂无缺陷尺寸数据</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">🦾 机械臂状态</div>
+            <div class="arm-grid">
+                <div class="joint-card">
+                    <div class="joint-name">关节1 底座</div>
+                    <div class="joint-value" id="j1">0°</div>
+                </div>
+                <div class="joint-card">
+                    <div class="joint-name">关节2 大臂</div>
+                    <div class="joint-value" id="j2">0°</div>
+                </div>
+                <div class="joint-card">
+                    <div class="joint-name">关节3 小臂</div>
+                    <div class="joint-value" id="j3">0°</div>
+                </div>
+                <div class="joint-card">
+                    <div class="joint-name">关节4 腕部旋</div>
+                    <div class="joint-value" id="j4">0°</div>
+                </div>
+                <div class="joint-card">
+                    <div class="joint-name">关节5 腕部摆</div>
+                    <div class="joint-value" id="j5">0°</div>
+                </div>
+                <div class="joint-card">
+                    <div class="joint-name">关节6 夹爪</div>
+                    <div class="joint-value" id="j6">0°</div>
+                </div>
+            </div>
+            <div class="gripper-status">
+                <div class="gripper-item">
+                    <div class="label">夹爪状态</div>
+                    <div class="value" id="gripperStatus">未知</div>
+                </div>
+                <div class="gripper-item">
+                    <div class="label">当前位置</div>
+                    <div class="value" id="position">未知</div>
+                </div>
+                <div class="gripper-item">
+                    <div class="label">负载</div>
+                    <div class="value" id="load">0kg</div>
+                </div>
+                <div class="gripper-item">
+                    <div class="label">温度</div>
+                    <div class="value" id="temp">0°C</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-section">
+            <div class="panel">
+                <div class="panel-title">🎮 控制操作</div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="refreshAll()">🔄 刷新全部</button>
+                    <button class="btn btn-success" onclick="requestDetection()">🔍 请求检测</button>
+                    <button class="btn btn-danger" onclick="clearHistory()">🗑️ 清除记录</button>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">📤 图片上传检测</div>
+                <div class="upload-area">
+                    <p>选择图片发送到原服务器检测</p>
+                    <input type="file" id="imageInput" accept="image/*" onchange="previewImage(this)">
+                    <div class="preview-area" id="previewArea" style="display:none;">
+                        <img id="previewImg" src="" alt="预览">
+                        <br><br>
+                        <button class="btn btn-success" onclick="uploadImage()">📤 上传并检测</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">📋 检测记录表</div>
+            <div style="max-height: 400px; overflow-y: auto;">
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>时间</th>
+                            <th>类别</th>
+                            <th>缺陷名称</th>
+                            <th>置信度</th>
+                            <th>尺寸(mm)</th>
+                            <th>面积(mm²)</th>
+                            <th>判定</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody">
+                        <tr><td colspan="8" style="text-align:center;color:#888;">暂无检测记录</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">🔌 API接口列表</div>
+            <div class="api-grid">
+                <div class="api-item">
+                    <div class="endpoint">GET /status</div>
+                    <div class="desc">完整状态信息</div>
+                </div>
+                <div class="api-item">
+                    <div class="endpoint">GET /detection_results</div>
+                    <div class="desc">检测结果(含尺寸)</div>
+                </div>
+                <div class="api-item">
+                    <div class="endpoint">GET /detection_image_with_size</div>
+                    <div class="desc">检测图片(含标注)</div>
+                </div>
+                <div class="api-item">
+                    <div class="endpoint">GET /defect_sizes</div>
+                    <div class="desc">缺陷尺寸列表</div>
+                </div>
+                <div class="api-item">
+                    <div class="endpoint">POST /api/request_detection</div>
+                    <div class="desc">请求检测</div>
+                </div>
+                <div class="api-item">
+                    <div class="endpoint">POST /api/send_image</div>
+                    <div class="desc">上传图片检测</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-title">📄 JSON响应查看</div>
+            <div class="btn-group">
+                <button class="btn btn-primary" onclick="showJSON('status')">状态信息</button>
+                <button class="btn btn-primary" onclick="showJSON('defect_sizes')">缺陷尺寸</button>
+                <button class="btn btn-primary" onclick="showJSON('detection_results')">检测结果</button>
+            </div>
+            <div class="json-response" id="jsonResponse">点击上方按钮查看JSON响应...</div>
+        </div>
+
+        <footer>
+            <p>机械臂视觉检测系统 v2.1 | 含尺寸显示 | 数据源: 172.16.68.111:8080</p>
+        </footer>
+    </div>
+
+    <script>
+        let detectionHistory = [];
+        let selectedFile = null;
+
+        const defectNames = {
+            'ca_shang': '擦伤',
+            'zhen_kong': '真空',
+            'zang_wu': '脏污',
+            'zhe_zhou': '折皱',
+            'good': '合格'
+        };
+
+        function updateUI(data) {
+            const sys = data.system || {};
+            document.getElementById('connStatus').textContent = sys.connection || '未知';
+            document.getElementById('connBox').className = sys.connection === '已连接' ? 'status-item connected' : 'status-item disconnected';
+
+            document.getElementById('videoStatus').textContent = sys.video_stream || '未知';
+            document.getElementById('videoBox').className = sys.video_stream === '运行中' ? 'status-item connected' : 'status-item';
+
+            document.getElementById('detectionStatus').textContent = sys.detection_service || '未知';
+            document.getElementById('detectionBox').className = sys.detection_service === '运行中' ? 'status-item connected' : 'status-item warning';
+
+            document.getElementById('lastUpdate').textContent = sys.last_update || '--';
+
+            const stats = data.detection || {};
+            document.getElementById('totalCount').textContent = stats.total || 0;
+            document.getElementById('qualifiedCount').textContent = stats.qualified || 0;
+            document.getElementById('unqualifiedCount').textContent = stats.unqualified || 0;
+            document.getElementById('passRate').textContent = (stats.pass_rate || 0) + '%';
+
+            const dist = stats.defect_distribution || {};
+            document.getElementById('ca_shang').textContent = dist['ca_shang'] || 0;
+            document.getElementById('zhen_kong').textContent = dist['zhen_kong'] || 0;
+            document.getElementById('zang_wu').textContent = dist['zang_wu'] || 0;
+            document.getElementById('zhe_zhou').textContent = dist['zhe_zhou'] || 0;
+
+            const sample = data.sample_size || {};
+            if (sample.width_mm) {
+                document.getElementById('sampleWidth').innerHTML = sample.width_mm + '<span class="unit">mm</span>';
+            }
+            if (sample.height_mm) {
+                document.getElementById('sampleHeight').innerHTML = sample.height_mm + '<span class="unit">mm</span>';
+            }
+            if (sample.width_mm && sample.height_mm) {
+                document.getElementById('sampleArea').innerHTML = (sample.width_mm * sample.height_mm) + '<span class="unit">mm²</span>';
+            }
+
+            const arm = data.arm || {};
+            const joints = arm.joint_angles || [0, 0, 0, 0, 0, 0];
+            for (let i = 0; i < 6; i++) {
+                document.getElementById('j' + (i+1)).textContent = joints[i] + '°';
+            }
+            document.getElementById('gripperStatus').textContent = arm.gripper_status || '未知';
+            document.getElementById('position').textContent = arm.current_position || '未知';
+            document.getElementById('load').textContent = (arm.load || 0) + 'kg';
+            document.getElementById('temp').textContent = (arm.temperature || 0) + '°C';
+
+            const results = data.recent_results || [];
+            updateDetectionList(results);
+            updateResultsTable(results);
+
+            const defectSizes = data.defect_sizes || [];
+            updateSizeTable(defectSizes);
+
+            refreshDetectionImage();
+        }
+
+        function updateDetectionList(results) {
+            const container = document.getElementById('detectionList');
+            if (results.length === 0) {
+                container.innerHTML = '<div class="det-card"><div class="type">等待检测...</div><div class="info">暂无数据</div></div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            results.slice(0, 8).forEach(r => {
+                const isDefect = r.class_name !== 'good';
+                const card = document.createElement('div');
+                card.className = `det-card ${isDefect ? 'defect' : 'good'}`;
+                
+                let sizeHtml = '';
+                if (r.size && isDefect) {
+                    sizeHtml = `
+                        <div class="size-info">📐 ${r.size.width_mm} × ${r.size.height_mm} mm</div>
+                        <div class="area-info">面积: ${r.size.area_mm2} mm² (${r.size.area_ratio}%)</div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="type">${isDefect ? '❌ 不合格' : '✅ 合格'}</div>
+                    <div class="info">${defectNames[r.class_name] || r.class_name}</div>
+                    <div class="confidence">置信度: ${((r.score || 0) * 100).toFixed(1)}%</div>
+                    ${sizeHtml}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateSizeTable(defectSizes) {
+            const tbody = document.getElementById('sizeTableBody');
+            if (defectSizes.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">暂无缺陷尺寸数据</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = defectSizes.map((d, i) => {
+                const s = d.size;
+                return `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${d.class_cn}</td>
+                        <td class="size-value">${s.width_mm}</td>
+                        <td class="size-value">${s.height_mm}</td>
+                        <td class="area-value">${s.area_mm2}</td>
+                        <td>${s.area_ratio}%</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function updateResultsTable(results) {
+            const tbody = document.getElementById('resultsBody');
+            if (results.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;">暂无检测记录</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = results.slice(0, 50).map((r, i) => {
+                const isDefect = r.class_name !== 'good';
+                let sizeCell = '--';
+                let areaCell = '--';
+                if (r.size && isDefect) {
+                    sizeCell = `${r.size.width_mm}×${r.size.height_mm}`;
+                    areaCell = r.size.area_mm2;
+                }
+                return `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>--:--:--</td>
+                        <td>${r.class_name}</td>
+                        <td>${defectNames[r.class_name] || r.class_name}</td>
+                        <td>${((r.score || 0) * 100).toFixed(1)}%</td>
+                        <td class="size-value">${sizeCell}</td>
+                        <td class="area-value">${areaCell}</td>
+                        <td><span class="badge ${isDefect ? 'badge-defect' : 'badge-good'}">${isDefect ? '不合格' : '合格'}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function refreshDetectionImage() {
+            const img = document.getElementById('detectionImageWithSize');
+            img.src = '/detection_image_with_size?t=' + Date.now();
+        }
+
+        function refreshAll() {
+            fetch('/status')
+                .then(r => r.json())
+                .then(data => {
+                    updateUI(data);
+                    console.log('数据已刷新:', data);
+                })
+                .catch(err => console.error('刷新失败:', err));
+        }
+
+        function requestDetection() {
+            fetch('/api/request_detection', { method: 'POST' })
+                .then(r => r.json())
+                .then(data => {
+                    console.log('检测结果:', data);
+                    alert('检测完成！');
+                    refreshAll();
+                })
+                .catch(err => {
+                    console.error('检测失败:', err);
+                    alert('检测请求失败');
+                });
+        }
+
+        function clearHistory() {
+            detectionHistory = [];
+            updateResultsTable([]);
+            document.getElementById('totalCount').textContent = '0';
+            document.getElementById('qualifiedCount').textContent = '0';
+            document.getElementById('unqualifiedCount').textContent = '0';
+            document.getElementById('passRate').textContent = '0%';
+            document.getElementById('detectionList').innerHTML = '<div class="det-card"><div class="type">等待检测...</div><div class="info">暂无数据</div></div>';
+            document.getElementById('sizeTableBody').innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">暂无缺陷尺寸数据</td></tr>';
+        }
+
+        function previewImage(input) {
+            if (input.files && input.files[0]) {
+                selectedFile = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImg').src = e.target.result;
+                    document.getElementById('previewArea').style.display = 'block';
+                };
+                reader.readAsDataURL(selectedFile);
+            }
+        }
+
+        function uploadImage() {
+            if (!selectedFile) {
+                alert('请先选择图片');
+                return;
+            }
+            const formData = new FormData();
+            formData.append('image', selectedFile);
+            fetch('/api/send_image', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    console.log('上传检测结果:', data);
+                    alert('检测完成！');
+                    refreshAll();
+                })
+                .catch(err => {
+                    console.error('上传失败:', err);
+                    alert('图片上传失败');
+                });
+        }
+
+        function showJSON(endpoint) {
+            fetch('/' + endpoint)
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('jsonResponse').textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(err => {
+                    document.getElementById('jsonResponse').textContent = '获取失败: ' + err;
+                });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshAll();
+            setInterval(refreshAll, 3000);
+        });
+    </script>
+</body>
+</html>

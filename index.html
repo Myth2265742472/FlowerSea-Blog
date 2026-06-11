@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowerSea's Blog — 代码与创造</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <canvas id="particles"></canvas>
+    <div class="cursor-dot" id="cursor-dot"></div>
+    <div class="cursor-ring" id="cursor-ring"></div>
+
+    <!-- Reading Progress -->
+    <div class="reading-progress" id="reading-progress"></div>
+
+    <header id="navbar">
+        <div class="nav-container">
+            <a href="#" onclick="navigateTo('home'); return false;" class="logo">
+                <span class="logo-bracket">&lt;</span>FlowerSea<span class="logo-slash">/</span><span class="logo-bracket">&gt;</span>
+            </a>
+            <nav id="main-nav">
+                <ul>
+                    <li><a href="#" onclick="navigateTo('home'); return false;" class="nav-link magnetic" data-page="home" data-text="HOME">首页</a></li>
+                    <li><a href="#" onclick="navigateTo('archive'); return false;" class="nav-link magnetic" data-page="archive" data-text="ARCHIVE">归档</a></li>
+                    <li><a href="#" onclick="navigateTo('about'); return false;" class="nav-link magnetic" data-page="about" data-text="ABOUT">关于</a></li>
+                    <li><a href="https://github.com/Myth2265742472" target="_blank" class="nav-cta magnetic" data-text="GITHUB">GitHub ↗</a></li>
+                </ul>
+            </nav>
+            <button class="menu-toggle" id="menu-toggle" aria-label="菜单">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero (shown on home) -->
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <div class="hero-tag">
+                <span class="status-dot"></span>
+                <span>正在写代码...</span>
+            </div>
+            <h1 class="hero-title">
+                <span class="line line-1">记录.</span>
+                <span class="line line-2 gradient-text">创造.</span>
+                <span class="line line-3">分享.</span>
+            </h1>
+            <p class="hero-desc">
+                <span class="typed-wrapper">
+                    <span id="typed-text"></span>
+                    <span class="typed-cursor">|</span>
+                </span>
+            </p>
+            <div class="hero-actions">
+                <a href="#" onclick="document.getElementById('posts-list')&&document.getElementById('posts-list').scrollIntoView({behavior:'smooth'});return false;" class="btn btn-primary magnetic">
+                    <span>探索文章</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
+                </a>
+                <a href="#" onclick="navigateTo('about'); return false;" class="btn btn-ghost magnetic">
+                    <span>了解更多</span>
+                </a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat"><span class="stat-number" data-target="42">0</span><span class="stat-label">篇文章</span></div>
+                <div class="stat-divider"></div>
+                <div class="stat"><span class="stat-number" data-target="128">0</span><span class="stat-label">天运行</span></div>
+                <div class="stat-divider"></div>
+                <div class="stat"><span class="stat-number" data-target="999">0</span><span class="stat-label">次提交</span></div>
+            </div>
+        </div>
+        <div class="hero-scroll-indicator"><div class="scroll-line"></div></div>
+    </section>
+
+    <main class="main-container">
+        <div class="main-layout">
+            <!-- Content Area -->
+            <div class="content-area" id="content-area"></div>
+            <!-- Sidebar -->
+            <aside class="sidebar" id="sidebar">
+                <div class="widget reveal">
+                    <h3 class="widget-title"><span class="widget-icon">🔍</span> 搜索</h3>
+                    <form class="search-form" onsubmit="handleSearch(); return false;">
+                        <input type="text" placeholder="搜索文章..." id="search-input">
+                        <button type="submit">搜索</button>
+                    </form>
+                </div>
+                <div class="widget reveal">
+                    <h3 class="widget-title"><span class="widget-icon">📝</span> 最新文章</h3>
+                    <ul id="latest-articles">
+                        <li><a href="#" onclick="navigateTo('article', 'article1'); return false;">深入理解 Typecho 博客系统的设计与实现</a></li>
+                        <li><a href="#" onclick="navigateTo('article', 'article2'); return false;">从零开始搭建个人技术博客的完整指南</a></li>
+                        <li><a href="#" onclick="navigateTo('article', 'article3'); return false;">Web 前端开发最佳实践与性能优化</a></li>
+                        <li><a href="#" onclick="navigateTo('article', 'article4'); return false;">使用 Git 进行版本控制的实用技巧</a></li>
+                    </ul>
+                </div>
+                <div class="widget reveal">
+                    <h3 class="widget-title"><span class="widget-icon">📂</span> 分类</h3>
+                    <ul id="category-list">
+                        <li><a href="#">技术教程 (1)</a></li>
+                        <li><a href="#">建站教程 (1)</a></li>
+                        <li><a href="#">前端开发 (1)</a></li>
+                        <li><a href="#">版本控制 (1)</a></li>
+                    </ul>
+                </div>
+                <div class="widget reveal">
+                    <h3 class="widget-title"><span class="widget-icon">📅</span> 归档</h3>
+                    <ul id="archive-list">
+                        <li><a href="#">2026年3月 (4)</a></li>
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="#" onclick="navigateTo('home'); return false;" class="logo">
+                        <span class="logo-bracket">&lt;</span>FlowerSea<span class="logo-slash">/</span><span class="logo-bracket">&gt;</span>
+                    </a>
+                    <p>记录生活，分享技术。代码即诗，创造无限。</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-col">
+                        <h4>导航</h4>
+                        <a href="#" onclick="navigateTo('home'); return false;">首页</a>
+                        <a href="#" onclick="navigateTo('archive'); return false;">归档</a>
+                        <a href="#" onclick="navigateTo('about'); return false;">关于</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>社交</h4>
+                        <a href="https://github.com/Myth2265742472" target="_blank">GitHub</a>
+                        <a href="https://juejin.cn/user/960332145889899" target="_blank">掘金</a>
+                        <a href="mailto:2265742472@qq.com">Email</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 FlowerSea. Crafted with <span class="heart">♥</span> and lots of ☕</p>
+                <p class="footer-code">
+                    <span class="code-keyword">const</span> <span class="code-var">life</span> = <span class="code-func">()</span> => <span class="code-string">"keep coding"</span>;
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Markdown & Code Highlight Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <script src="js/markdown-loader.js"></script>
+    <script src="js/router.js"></script>
+    <script src="js/player.js?v=2"></script>
+    <script src="js/effects.js"></script>
+</body>
+</html>

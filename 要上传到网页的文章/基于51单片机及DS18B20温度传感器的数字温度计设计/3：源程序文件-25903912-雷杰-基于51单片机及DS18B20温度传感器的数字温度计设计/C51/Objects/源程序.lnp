@@ -1,0 +1,3 @@
+".\Objects\源程序.obj" 
+TO ".\Objects\源程序" 
+PRINT(".\Listings\源程序.m51")
