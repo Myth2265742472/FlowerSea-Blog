@@ -22,6 +22,14 @@ Thumbs.db
 # Music files (too large, not needed for code repo)
 music/*.mp3
 
+# Large binary files
+*.zip
+*.mp4
+*.avi
+*.mov
+*.rar
+*.7z
+
 # Temp files
 *.tmp
 *.log
