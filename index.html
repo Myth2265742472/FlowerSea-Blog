@@ -10,6 +10,11 @@
 </head>
 <body>
     <canvas id="particles"></canvas>
+    <div class="ambient-scene" aria-hidden="true">
+        <span class="ambient-grid"></span>
+        <span class="ambient-beam ambient-beam-1"></span>
+        <span class="ambient-beam ambient-beam-2"></span>
+    </div>
     <div class="cursor-dot" id="cursor-dot"></div>
     <div class="cursor-ring" id="cursor-ring"></div>
 
@@ -69,6 +74,13 @@
                 <div class="stat-divider"></div>
                 <div class="stat"><span class="stat-number" data-target="999">0</span><span class="stat-label">次提交</span></div>
             </div>
+        </div>
+        <div class="hero-orbit" aria-hidden="true">
+            <span class="orbit-ring orbit-ring-1"></span>
+            <span class="orbit-ring orbit-ring-2"></span>
+            <span class="orbit-node orbit-node-1"></span>
+            <span class="orbit-node orbit-node-2"></span>
+            <span class="orbit-core"></span>
         </div>
         <div class="hero-scroll-indicator"><div class="scroll-line"></div></div>
     </section>
