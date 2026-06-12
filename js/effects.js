@@ -368,7 +368,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ====== Typed Effect 优化版 ======
     const typedEl = document.getElementById('typed-text');
-    if (typedEl && !prefersReducedMotion) {
+    if (typedEl && prefersReducedMotion) {
+        typedEl.textContent = '记录思考，分享创造';
+    } else if (typedEl) {
         const phrases = ['全栈工程师 / 开源爱好者', '用代码构建数字世界', '探索技术的无限可能', '记录思考，分享创造'];
         let pi = 0, ci = 0, del = false, wait = 0;
         let animationId = null;
