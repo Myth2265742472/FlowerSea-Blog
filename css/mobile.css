@@ -11,6 +11,16 @@ body.mobile-mode .cursor-dot,
 body.mobile-mode .cursor-ring { display: none !important; }
 body.mobile-mode .reading-progress { height: 2px; }
 
+/* 全局兜底：禁止整页横向滚动，溢出只在代码块/表格内部滚动 */
+body.mobile-mode { overflow-x: hidden; }
+body.mobile-mode img,
+body.mobile-mode video,
+body.mobile-mode iframe,
+body.mobile-mode .post-card-inner,
+body.mobile-mode .about-hero-card,
+body.mobile-mode .about-section-card,
+body.mobile-mode .archive-item { max-width: 100%; box-sizing: border-box; }
+
 /* ====== 顶部导航：仅保留 logo，导航交给底部 Tab 栏 ====== */
 body.mobile-mode #navbar { padding: 14px 0; background: rgba(10,10,15,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
 body.mobile-mode #navbar.scrolled { padding: 10px 0; }
@@ -64,13 +74,37 @@ body.mobile-mode .article-nav { grid-template-columns: 1fr; gap: 12px; }
 body.mobile-mode .article-nav-item[style*="text-align:right"] { text-align: left !important; }
 
 /* 正文 */
-body.mobile-mode .prose p { font-size: 15px; line-height: 1.85; }
+body.mobile-mode .prose p { font-size: 15px; line-height: 1.85; overflow-wrap: break-word; word-break: break-word; }
 body.mobile-mode .prose h2 { font-size: 22px; margin: 36px 0 14px; }
 body.mobile-mode .prose h3 { font-size: 18px; margin: 28px 0 10px; }
-body.mobile-mode .prose pre code { font-size: 12.5px; padding: 16px; line-height: 1.6; }
+
+/* 代码块：容器可横向滚动，绝不撑破视口 */
+body.mobile-mode .prose pre { margin: 24px -16px; border-radius: 0; border-left: none; border-right: none; }
+body.mobile-mode .prose pre code {
+    display: block;
+    font-size: 12px;
+    padding: 16px 16px;
+    line-height: 1.6;
+    white-space: pre;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100vw;
+    box-sizing: border-box;
+}
+/* 行内代码不换行截断 */
+body.mobile-mode .prose code:not(pre code) { word-break: break-all; white-space: normal; }
+
 body.mobile-mode .prose blockquote { padding: 16px 18px; margin: 24px 0; }
-body.mobile-mode .prose table { font-size: 13px; }
-body.mobile-mode .prose th, body.mobile-mode .prose td { padding: 8px 10px; }
+
+/* 表格：包裹横向滚动容器，绝不撑破视口 */
+body.mobile-mode .prose table { display: block; width: 100% !important; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+body.mobile-mode .prose thead, body.mobile-mode .prose tbody, body.mobile-mode .prose tr { display: table; width: 100%; table-layout: auto; }
+body.mobile-mode .prose th, body.mobile-mode .prose td { padding: 8px 10px; white-space: nowrap; }
+body.mobile-mode .prose td { white-space: normal; min-width: 80px; }
+
+/* 图片：严格限宽，绝不溢出 */
+body.mobile-mode .prose img { max-width: 100%; height: auto; display: block; margin-left: auto; margin-right: auto; }
+
 body.mobile-mode .article-tags { margin-top: 36px; gap: 8px; }
 body.mobile-mode .article-tags a { padding: 5px 12px; font-size: 12px; }
 
