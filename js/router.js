@@ -248,6 +248,21 @@ function getArticleHTML(article) {
     `;
 }
 
+// 文章渲染后补做代码高亮 + 语言标签（marked v5+ 不再内置 highlight 选项）
+function enhanceArticleContent(container) {
+    if (!container || !window.hljs) return;
+    container.querySelectorAll('pre code').forEach(block => {
+        if (block.dataset.highlighted) return;
+        // 从 class="language-xxx" 提取语言，用于 CSS 右上角语言标签
+        let lang = '';
+        block.classList.forEach(c => { if (c.indexOf('language-') === 0) lang = c.slice(9); });
+        try { hljs.highlightElement(block); } catch (e) { /* 忽略单块高亮异常 */ }
+        block.dataset.highlighted = '1';
+        const pre = block.parentElement;
+        if (pre && pre.tagName === 'PRE' && lang) pre.setAttribute('data-lang', lang);
+    });
+}
+
 // Navigate
 async function navigateTo(pageName, articleId = null, pageNum = 1, isPagination = false, filterType = null, filterValue = null) {
     const contentArea = document.getElementById('content-area');
@@ -309,6 +324,9 @@ async function navigateTo(pageName, articleId = null, pageNum = 1, isPagination 
             contentArea.innerHTML = getHomeTemplate(pageNum, filterType, filterValue);
             document.title = pageTitleMap.home;
         }
+
+        // 文章内容代码高亮（marked v5+ 渲染后补做）
+        enhanceArticleContent(contentArea);
 
         // Fade in
         contentArea.style.opacity = '1';

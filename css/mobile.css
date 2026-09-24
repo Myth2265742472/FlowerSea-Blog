@@ -1,0 +1,175 @@
+/*!
+ * FlowerSea's Blog — Mobile UI
+ * 仅在 body.mobile-mode 下生效，桌面端完全不受影响
+ * 检测逻辑见 js/mobile-ui.js
+ */
+
+/* ====== 基础：恢复系统光标，关闭桌面专属交互 ====== */
+body.mobile-mode,
+body.mobile-mode * { cursor: auto; }
+body.mobile-mode .cursor-dot,
+body.mobile-mode .cursor-ring { display: none !important; }
+body.mobile-mode .reading-progress { height: 2px; }
+
+/* ====== 顶部导航：仅保留 logo，导航交给底部 Tab 栏 ====== */
+body.mobile-mode #navbar { padding: 14px 0; background: rgba(10,10,15,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+body.mobile-mode #navbar.scrolled { padding: 10px 0; }
+body.mobile-mode .nav-container { padding: 0 20px; }
+body.mobile-mode #main-nav { display: none !important; }
+body.mobile-mode .menu-toggle { display: none !important; }
+
+/* ====== Hero：紧凑化 ====== */
+body.mobile-mode .hero { min-height: auto; padding: 96px 20px 56px; }
+body.mobile-mode .hero-title { font-size: clamp(38px, 12vw, 60px); letter-spacing: -2px; line-height: 1.05; }
+body.mobile-mode .hero-desc { font-size: 14px; min-height: 22px; }
+body.mobile-mode .hero-actions { gap: 12px; margin-bottom: 44px; }
+body.mobile-mode .btn { padding: 12px 24px; font-size: 14px; }
+body.mobile-mode .hero-stats { gap: 20px; }
+body.mobile-mode .stat-number { font-size: 26px; }
+body.mobile-mode .stat-label { font-size: 11px; }
+body.mobile-mode .stat-divider { height: 30px; }
+body.mobile-mode .hero-scroll-indicator { display: none; }
+
+/* ====== 主布局：单列全宽，留出底部 Tab 栏 + 播放器空间 ====== */
+body.mobile-mode .main-container { padding: 24px 16px 150px; }
+body.mobile-mode .main-layout { grid-template-columns: 1fr; gap: 24px; }
+
+/* ====== 侧边栏：堆叠到内容下方，单列紧凑 ====== */
+body.mobile-mode .sidebar { position: static; display: grid; grid-template-columns: 1fr; gap: 16px; }
+body.mobile-mode .widget { padding: 18px; margin-bottom: 0; }
+body.mobile-mode .widget:hover { border-color: var(--border); }
+
+/* ====== 文章卡片：全宽紧凑 ====== */
+body.mobile-mode .posts-grid { gap: 16px; }
+body.mobile-mode .post-card-inner { padding: 20px; transform: none !important; }
+body.mobile-mode .post-card:hover .post-card-inner { transform: none !important; }
+body.mobile-mode .post-card.tilt-3d { transform: none !important; }
+body.mobile-mode .post-card:hover .post-card-mouse-gradient,
+body.mobile-mode .post-card:hover .post-card-inner::before { opacity: 0; }
+body.mobile-mode .post-card h2 { font-size: 18px; }
+body.mobile-mode .article-meta-new { gap: 12px; font-size: 11px; }
+body.mobile-mode .article-excerpt-content p { font-size: 13px; padding: 10px 12px; }
+body.mobile-mode .post-footer-new { padding-top: 12px; }
+
+/* 分页 */
+body.mobile-mode .pagination { gap: 12px; }
+body.mobile-mode .page-btn { padding: 8px 14px; font-size: 13px; }
+
+/* ====== 文章详情：全宽阅读 ====== */
+body.mobile-mode .article-detail .article-title { font-size: clamp(22px, 6.5vw, 30px); letter-spacing: -0.5px; }
+body.mobile-mode .article-detail .article-info { gap: 12px; font-size: 12px; }
+body.mobile-mode .article-content-wrapper { flex-direction: column; gap: 0; }
+body.mobile-mode .article-toc { position: static; width: 100%; max-height: none; margin-bottom: 16px; padding: 12px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: var(--radius-sm); }
+body.mobile-mode .article-nav { grid-template-columns: 1fr; gap: 12px; }
+body.mobile-mode .article-nav-item[style*="text-align:right"] { text-align: left !important; }
+
+/* 正文 */
+body.mobile-mode .prose p { font-size: 15px; line-height: 1.85; }
+body.mobile-mode .prose h2 { font-size: 22px; margin: 36px 0 14px; }
+body.mobile-mode .prose h3 { font-size: 18px; margin: 28px 0 10px; }
+body.mobile-mode .prose pre code { font-size: 12.5px; padding: 16px; line-height: 1.6; }
+body.mobile-mode .prose blockquote { padding: 16px 18px; margin: 24px 0; }
+body.mobile-mode .prose table { font-size: 13px; }
+body.mobile-mode .prose th, body.mobile-mode .prose td { padding: 8px 10px; }
+body.mobile-mode .article-tags { margin-top: 36px; gap: 8px; }
+body.mobile-mode .article-tags a { padding: 5px 12px; font-size: 12px; }
+
+/* ====== 关于页 ====== */
+body.mobile-mode .about-hero-card { grid-template-columns: 1fr; text-align: center; padding: 28px 20px; gap: 20px; }
+body.mobile-mode .about-avatar-circle { margin: 0 auto; width: 110px; height: 110px; font-size: 44px; }
+body.mobile-mode .about-intro-text h3 { font-size: 24px; }
+body.mobile-mode .about-intro-text p { font-size: 14px; }
+body.mobile-mode .about-section-card { padding: 24px 20px; }
+body.mobile-mode .about-section-card ul { grid-template-columns: 1fr; gap: 6px; }
+body.mobile-mode .contact-cta { padding: 40px 24px; }
+body.mobile-mode .contact-cta h3 { font-size: 24px; }
+
+/* ====== 归档页 ====== */
+body.mobile-mode .archive-year { font-size: 26px; }
+body.mobile-mode .archive-item a { font-size: 15px; }
+body.mobile-mode .archive-item { padding: 14px 0; }
+
+/* ====== 页脚 ====== */
+body.mobile-mode .footer { padding: 48px 20px 130px; }
+body.mobile-mode .footer-top { flex-direction: column; gap: 32px; margin-bottom: 40px; }
+body.mobile-mode .footer-links { gap: 32px; flex-wrap: wrap; }
+body.mobile-mode .footer-bottom { padding-top: 24px; }
+
+/* ====== 音乐播放器：紧凑常驻条，置于 Tab 栏上方 ====== */
+body.mobile-mode #music-player-container { transform: translateY(0) !important; bottom: 56px !important; }
+body.mobile-mode #music-player-container.visible { transform: translateY(0) !important; }
+body.mobile-mode #music-player { max-width: 100%; border-radius: 0; padding: 10px 14px; gap: 12px; border-left: none; border-right: none; }
+body.mobile-mode .player-main { gap: 10px; }
+body.mobile-mode .cover-art { width: 38px; height: 38px; }
+body.mobile-mode .cover-glow { width: 38px; height: 38px; }
+body.mobile-mode .player-info { width: auto; flex: 1; min-width: 0; }
+body.mobile-mode .player-title { font-size: 13px; }
+body.mobile-mode .player-artist { font-size: 11px; }
+/* 移动端隐藏进度条与音量，仅保留 封面/标题/控制 按钮 */
+body.mobile-mode .player-progress { display: none; }
+body.mobile-mode .player-volume { display: none; }
+body.mobile-mode .player-controls { gap: 8px; }
+body.mobile-mode .control-btn svg { width: 18px; height: 18px; }
+body.mobile-mode .btn-play { width: 34px; height: 34px; }
+body.mobile-mode .btn-play svg { width: 13px; height: 13px; }
+
+/* ====== 底部 Tab 栏（mobile-ui.js 动态创建） ====== */
+.mobile-tabbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: rgba(10,10,15,0.92);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-around;
+    align-items: stretch;
+    z-index: 10000;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.25);
+}
+.mobile-tabbar .tab {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-family: var(--font-mono);
+    letter-spacing: 0.3px;
+    padding: 6px 0 4px;
+    transition: color 0.25s var(--transition);
+    -webkit-tap-highlight-color: transparent;
+}
+.mobile-tabbar .tab svg { width: 22px; height: 22px; transition: transform 0.25s var(--transition); }
+.mobile-tabbar .tab.active { color: var(--accent-light); }
+.mobile-tabbar .tab.active svg { transform: translateY(-1px); }
+.mobile-tabbar .tab:active { transform: scale(0.9); }
+/* 激活态顶部高亮线 */
+.mobile-tabbar .tab.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 24px;
+    height: 2px;
+    background: var(--gradient);
+    border-radius: 0 0 2px 2px;
+}
+
+/* Tab 栏仅在移动端显示 */
+.mobile-tabbar { display: none; }
+body.mobile-mode .mobile-tabbar { display: flex; }
+
+/* ====== 极小屏微调 ====== */
+@media (max-width: 360px) {
+    body.mobile-mode .hero-title { font-size: 34px; }
+    body.mobile-mode .stat-divider { display: none; }
+    body.mobile-mode .hero-stats { gap: 16px; }
+}
