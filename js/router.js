@@ -13,10 +13,20 @@ const pageTitleMap = {
 
 let currentPage = 'home';
 let currentArticleId = null;
+let cleanupArticleTOC = null;
 
 // Get article index for prev/next nav
 function getArticleIds() {
-    return Object.keys(window.markdownLoader ? window.markdownLoader.getArticleList() : []).reverse();
+    return (window.markdownLoader ? window.markdownLoader.getArticleList() : [])
+        .map(article => article.id)
+        .reverse();
+}
+
+function resetArticleTOC() {
+    if (cleanupArticleTOC) {
+        cleanupArticleTOC();
+        cleanupArticleTOC = null;
+    }
 }
 
 // Generate Home Page (used for Home, Category, Archive, and Search results)
@@ -86,7 +96,7 @@ function getHomeTemplate(pageNum = 1, filterType = null, filterValue = null) {
                 <div class="post-footer-new">
                     <div class="post-meta"><span class="post-date">${a.date}</span></div>
                     <a href="#" onclick="navigateTo('article','${a.id}');return false;" class="post-link-new magnetic">
-                        Read
+                        阅读
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </a>
                 </div>
@@ -249,7 +259,7 @@ function getArticleHTML(article) {
 }
 
 // Navigate
-async function navigateTo(pageName, articleId = null, pageNum = 1, isPagination = false, filterType = null, filterValue = null) {
+async function navigateTo(pageName, articleId = null, pageNum = 1, isPagination = false, filterType = null, filterValue = null, shouldPushState = true) {
     const contentArea = document.getElementById('content-area');
     const hero = document.getElementById('hero');
     if (!contentArea) return;
@@ -261,6 +271,7 @@ async function navigateTo(pageName, articleId = null, pageNum = 1, isPagination 
     setTimeout(async () => {
         // Show/hide hero
         if (hero) hero.classList.toggle('hidden', pageName !== 'home');
+        if (pageName !== 'article') resetArticleTOC();
 
         // Show/hide sidebar (hide on article pages for full-width reading)
         const sidebar = document.getElementById('sidebar');
@@ -350,7 +361,9 @@ async function navigateTo(pageName, articleId = null, pageNum = 1, isPagination 
         if (filterType && filterValue) {
             url += `&filter=${filterType}&val=${encodeURIComponent(filterValue)}`;
         }
-        history.pushState({ page: pageName, articleId, pageNum, filterType, filterValue }, '', url);
+        if (shouldPushState) {
+            history.pushState({ page: pageName, articleId, pageNum, filterType, filterValue }, '', url);
+        }
     }, 250);
 }
 
@@ -395,6 +408,7 @@ function scrollToHeading(id) {
 function initArticleTOC() {
     const prose = document.querySelector('.article-body.prose');
     if (!prose) return;
+    resetArticleTOC();
     
     // Add IDs to all h2 and h3 elements
     const headings = prose.querySelectorAll('h2, h3');
@@ -429,6 +443,7 @@ function initArticleTOC() {
     }
     
     window.addEventListener('scroll', updateActiveTOC, { passive: true });
+    cleanupArticleTOC = () => window.removeEventListener('scroll', updateActiveTOC);
     updateActiveTOC();
 }
 
@@ -573,16 +588,27 @@ async function initRouter() {
     const filter = params.get('filter');
     const val = params.get('val');
 
-    if (page === 'article' && id) await navigateTo('article', id);
-    else if (page === 'post') await navigateTo('post');
-    else if (page === 'about') await navigateTo('about');
-    else if (page === 'archive') await navigateTo('archive');
-    else await navigateTo('home', null, p, false, filter, val);
+    if (page === 'article' && id) await navigateTo('article', id, 1, false, null, null, false);
+    else if (page === 'post') await navigateTo('post', null, 1, false, null, null, false);
+    else if (page === 'about') await navigateTo('about', null, 1, false, null, null, false);
+    else if (page === 'archive') await navigateTo('archive', null, 1, false, null, null, false);
+    else await navigateTo('home', null, p, false, filter, val, false);
 
     updateSidebar();
 
     window.addEventListener('popstate', e => {
-        if (e.state && e.state.page) navigateTo(e.state.page, e.state.articleId, e.state.pageNum || 1, false, e.state.filterType, e.state.filterValue);
+        if (e.state && e.state.page) {
+            navigateTo(e.state.page, e.state.articleId, e.state.pageNum || 1, false, e.state.filterType, e.state.filterValue, false);
+            return;
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        const page = params.get('page') || 'home';
+        const id = params.get('id');
+        const p = parseInt(params.get('p')) || 1;
+        const filter = params.get('filter');
+        const val = params.get('val');
+        navigateTo(page, id, p, false, filter, val, false);
     });
 }
 

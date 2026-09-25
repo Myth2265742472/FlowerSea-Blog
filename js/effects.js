@@ -4,14 +4,16 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
 
     // ====== Particles 优化版 (性能优化) ======
     const canvas = document.getElementById('particles');
-    if (canvas) {
+    if (canvas && !prefersReducedMotion) {
         const ctx = canvas.getContext('2d');
         let particles = [];
         let mouse = { x: -1000, y: -1000 };
-        const COUNT = Math.min(window.innerWidth < 768 ? 40 : 70, 100); // 移动端减少粒子数量
+        const COUNT = Math.min(window.innerWidth < 768 || isCoarsePointer ? 28 : 64, 100); // 移动端减少粒子数量
         const CONNECT = 140;
         let animationId = null;
         let isTabActive = true;
@@ -20,8 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
             canvas.width = window.innerWidth; 
             canvas.height = window.innerHeight; 
             // 调整粒子数量基于屏幕大小
-            if (window.innerWidth < 768) {
-                particles = particles.slice(0, Math.min(particles.length, 40));
+            if (window.innerWidth < 768 || isCoarsePointer) {
+                particles = particles.slice(0, Math.min(particles.length, 28));
             }
         }
         resize();
@@ -144,10 +146,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // ====== Cursor 优化版 ======
     const dot = document.getElementById('cursor-dot');
     const ring = document.getElementById('cursor-ring');
-    if (dot && ring) {
+    if (dot && ring && !prefersReducedMotion) {
         let mx = 0, my = 0, rx = 0, ry = 0;
         let animationId = null;
-        let isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        let isMobile = isCoarsePointer || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         
         // 移动端禁用光标效果
         if (isMobile) {
@@ -366,7 +368,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ====== Typed Effect 优化版 ======
     const typedEl = document.getElementById('typed-text');
-    if (typedEl) {
+    if (typedEl && prefersReducedMotion) {
+        typedEl.textContent = '记录思考，分享创造';
+    } else if (typedEl) {
         const phrases = ['全栈工程师 / 开源爱好者', '用代码构建数字世界', '探索技术的无限可能', '记录思考，分享创造'];
         let pi = 0, ci = 0, del = false, wait = 0;
         let animationId = null;
@@ -599,6 +603,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ====== 3D Card Tilt Effect ======
     function init3DCards() {
+        if (prefersReducedMotion || isCoarsePointer) return;
         const cardSelectors = [
             { selector: '.post-card', gradientClass: 'post-card-mouse-gradient', tilt3d: true },
             { selector: '.widget', gradientClass: 'widget-mouse-gradient', tilt3d: false },

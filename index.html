@@ -3,13 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FlowerSea 的个人技术博客，记录代码、嵌入式、前端与开源项目实践。">
     <title>FlowerSea's Blog — 代码与创造</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
     <canvas id="particles"></canvas>
+    <div class="ambient-scene" aria-hidden="true">
+        <span class="ambient-grid"></span>
+        <span class="ambient-beam ambient-beam-1"></span>
+        <span class="ambient-beam ambient-beam-2"></span>
+    </div>
     <div class="cursor-dot" id="cursor-dot"></div>
     <div class="cursor-ring" id="cursor-ring"></div>
 
@@ -26,7 +35,7 @@
                     <li><a href="#" onclick="navigateTo('home'); return false;" class="nav-link magnetic" data-page="home" data-text="HOME">首页</a></li>
                     <li><a href="#" onclick="navigateTo('archive'); return false;" class="nav-link magnetic" data-page="archive" data-text="ARCHIVE">归档</a></li>
                     <li><a href="#" onclick="navigateTo('about'); return false;" class="nav-link magnetic" data-page="about" data-text="ABOUT">关于</a></li>
-                    <li><a href="https://github.com/Myth2265742472" target="_blank" class="nav-cta magnetic" data-text="GITHUB">GitHub ↗</a></li>
+                    <li><a href="https://github.com/Myth2265742472" target="_blank" rel="noopener noreferrer" class="nav-cta magnetic" data-text="GITHUB">GitHub ↗</a></li>
                 </ul>
             </nav>
             <button class="menu-toggle" id="menu-toggle" aria-label="菜单">
@@ -69,6 +78,13 @@
                 <div class="stat-divider"></div>
                 <div class="stat"><span class="stat-number" data-target="999">0</span><span class="stat-label">次提交</span></div>
             </div>
+        </div>
+        <div class="hero-orbit" aria-hidden="true">
+            <span class="orbit-ring orbit-ring-1"></span>
+            <span class="orbit-ring orbit-ring-2"></span>
+            <span class="orbit-node orbit-node-1"></span>
+            <span class="orbit-node orbit-node-2"></span>
+            <span class="orbit-core"></span>
         </div>
         <div class="hero-scroll-indicator"><div class="scroll-line"></div></div>
     </section>
@@ -132,8 +148,8 @@
                     </div>
                     <div class="footer-col">
                         <h4>社交</h4>
-                        <a href="https://github.com/Myth2265742472" target="_blank">GitHub</a>
-                        <a href="https://juejin.cn/user/960332145889899" target="_blank">掘金</a>
+                        <a href="https://github.com/Myth2265742472" target="_blank" rel="noopener noreferrer">GitHub</a>
+                        <a href="https://juejin.cn/user/960332145889899" target="_blank" rel="noopener noreferrer">掘金</a>
                         <a href="mailto:2265742472@qq.com">Email</a>
                     </div>
                 </div>
@@ -148,13 +164,13 @@
     </footer>
 
     <!-- Markdown & Code Highlight Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
 
-    <script src="js/markdown-loader.js"></script>
-    <script src="js/router.js"></script>
-    <script src="js/player.js?v=2"></script>
-    <script src="js/effects.js"></script>
+    <script src="js/markdown-loader.js" defer></script>
+    <script src="js/router.js" defer></script>
+    <script src="js/player.js?v=2" defer></script>
+    <script src="js/effects.js" defer></script>
 </body>
 </html>

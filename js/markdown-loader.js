@@ -30,21 +30,28 @@ const articlesMeta = {
 
 // 缓存已加载的文章内容
 const articlesCache = {};
+let markedConfigured = false;
+
+function configureMarked() {
+    if (!window.marked || markedConfigured) return;
+
+    marked.setOptions({
+        highlight: function(code, lang) {
+            if (window.hljs && lang && hljs.getLanguage(lang)) {
+                return hljs.highlight(code, { language: lang }).value;
+            }
+            return code;
+        }
+    });
+    markedConfigured = true;
+}
 
 // ====== Markdown 解析器 ======
 function parseMarkdown(md) {
     if (!md) return '';
     // 如果存在 marked.js 库，使用它进行专业解析
     if (window.marked) {
-        // 配置 marked 使用 highlight.js 进行代码高亮
-        marked.setOptions({
-            highlight: function(code, lang) {
-                if (window.hljs && lang && hljs.getLanguage(lang)) {
-                    return hljs.highlight(code, { language: lang }).value;
-                }
-                return code;
-            }
-        });
+        configureMarked();
         return marked.parse(md);
     }
 
@@ -85,7 +92,7 @@ async function loadArticle(articleId) {
 
     // 如果已经缓存，直接返回
     if (articlesCache[articleId]) {
-        return { id: articleId, meta, content: parseMarkdown(articlesCache[articleId]), rawMarkdown: articlesCache[articleId] };
+        return { id: articleId, meta, content: articlesCache[articleId].html, rawMarkdown: articlesCache[articleId].raw };
     }
 
     try {
@@ -100,11 +107,12 @@ async function loadArticle(articleId) {
             throw new Error(`Failed to load ${articleId}.md`);
         }
         const markdownText = await response.text();
+        const html = parseMarkdown(markdownText);
         
         // 存入缓存
-        articlesCache[articleId] = markdownText;
+        articlesCache[articleId] = { raw: markdownText, html };
         
-        return { id: articleId, meta, content: parseMarkdown(markdownText), rawMarkdown: markdownText };
+        return { id: articleId, meta, content: html, rawMarkdown: markdownText };
     } catch (error) {
         console.error('Error loading article:', error);
         return { id: articleId, meta, content: '<p>文章加载失败，请稍后再试。</p>' };
