@@ -36,15 +36,9 @@ function parseMarkdown(md) {
     if (!md) return '';
     // 如果存在 marked.js 库，使用它进行专业解析
     if (window.marked) {
-        // 配置 marked 使用 highlight.js 进行代码高亮
-        marked.setOptions({
-            highlight: function(code, lang) {
-                if (window.hljs && lang && hljs.getLanguage(lang)) {
-                    return hljs.highlight(code, { language: lang }).value;
-                }
-                return code;
-            }
-        });
+        // marked v5+ 已移除 `highlight` 选项（调用会触发废弃警告）。
+        // 这里仅解析 Markdown，代码高亮改在 DOM 渲染后由 router.js
+        // 调用 hljs.highlightElement 完成，兼容所有 marked 版本。
         return marked.parse(md);
     }
 

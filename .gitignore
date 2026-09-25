@@ -1,7 +1,8 @@
 # Dependencies
 node_modules/
 
-# Build files
+# Build output (由 GitHub Actions 构建并部署，不入仓库)
+dist/
 build/
 *.bin
 *.elf
@@ -9,6 +10,9 @@ build/
 .ninja_deps
 .ninja_log
 CMakeCache.txt
+
+# Vite cache
+.vite/
 
 # IDE
 .vscode/
@@ -21,6 +25,7 @@ Thumbs.db
 
 # Music files (too large, not needed for code repo)
 music/*.mp3
+public/music/*.mp3
 
 # Large binary files
 *.zip
