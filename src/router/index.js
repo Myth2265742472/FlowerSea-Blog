@@ -1,8 +1,6 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 
-// base 与 vite.config 一致
-const base = import.meta.env.BASE_URL
-
+// GitHub Pages 是静态托管，必须用 hash 路由，否则直接访问子路径会 404
 const routes = [
   { path: '/', name: 'home', component: () => import('../views/HomeView.vue'), meta: { title: "FlowerSea's Blog — 代码与创造" } },
   { path: '/article/:id', name: 'article', component: () => import('../views/ArticleView.vue'), meta: { title: '文章详情 — FlowerSea' } },
@@ -12,7 +10,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(base),
+  history: createWebHashHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) return savedPosition

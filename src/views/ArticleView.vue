@@ -1,83 +1,94 @@
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
-import { useRoute, useRouter, onBeforeRouteUpdate } from 'vue-router'
-import { loadArticle, enhanceCodeBlocks, generateTOC, getArticleList } from '../composables/useArticles'
+import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { loadArticle, generateTOC, enhanceCodeBlocks, getArticleList } from '../composables/useArticles'
 
 const route = useRoute()
-const router = useRouter()
-const allArticles = getArticleList()
-
 const article = ref(null)
 const toc = ref([])
-const activeHeading = ref('')
+const activeToc = ref('')
 const contentRef = ref(null)
-let observer
 
-const load = async (id) => {
-  article.value = null
-  const data = await loadArticle(id)
-  if (!data) { router.push('/'); return }
-  article.value = data
-  toc.value = generateTOC(data.rawMarkdown)
-  await nextTick()
-  if (contentRef.value) enhanceCodeBlocks(contentRef.value)
-  setupObserver()
-  window.scrollTo(0, 0)
-}
+const articleList = getArticleList()
 
-const setupObserver = () => {
-  if (observer) observer.disconnect()
-  if (!toc.value.length || !contentRef.value) return
-  const ids = toc.value.map((h) => h.id)
-  const els = ids.map((id) => document.getElementById(id)).filter(Boolean)
-  if (!els.length) return
-  observer = new IntersectionObserver((entries) => {
-    entries.forEach((e) => {
-      if (e.isIntersecting) activeHeading.value = e.target.id
-    })
-  }, { rootMargin: '-80px 0px -70% 0px' })
-  els.forEach((el) => observer.observe(el))
-}
-
-const onScroll = () => {
-  const bar = document.getElementById('reading-progress')
-  if (!bar) return
-  const sh = document.documentElement.scrollHeight - window.innerHeight
-  bar.style.width = (sh > 0 ? (window.scrollY / sh) * 100 : 0) + '%'
-}
-
-// 相邻文章
-const neighbors = computed(() => {
-  if (!article.value) return { prev: null, next: null }
-  const idx = allArticles.findIndex((a) => a.id === article.value.id)
-  return {
-    next: idx > 0 ? allArticles[idx - 1] : null, // 列表降序，idx-1 是更新的
-    prev: idx < allArticles.length - 1 ? allArticles[idx + 1] : null
-  }
+// 上一篇 / 下一篇（列表是降序，最新在前）
+const navPrev = computed(() => {
+  const idx = articleList.findIndex((a) => a.id === route.params.id)
+  return idx > 0 ? articleList[idx - 1] : null
+})
+const navNext = computed(() => {
+  const idx = articleList.findIndex((a) => a.id === route.params.id)
+  return idx >= 0 && idx < articleList.length - 1 ? articleList[idx + 1] : null
 })
 
-onMounted(() => { load(route.params.id); window.addEventListener('scroll', onScroll) })
-onBeforeRouteUpdate((to) => { if (to.params.id !== route.params.id) load(to.params.id) })
-onUnmounted(() => { if (observer) observer.disconnect(); window.removeEventListener('scroll', onScroll) })
+async function load(id) {
+  article.value = null
+  activeToc.value = ''
+  const data = await loadArticle(id)
+  if (!data) return
+  article.value = data
+  await nextTick()
+  // 代码高亮
+  if (contentRef.value) enhanceCodeBlocks(contentRef.value)
+  // 生成 TOC
+  toc.value = generateTOC(data.rawMarkdown)
+  // 给 h2/h3 加锚点 id，便于 TOC 跳转
+  if (contentRef.value) {
+    contentRef.value.querySelectorAll('h2, h3').forEach((h) => {
+      const text = h.textContent
+        .replace(/\*\*(.+?)\*\*/g, '$1')
+        .replace(/\*(.+?)\*/g, '$1')
+        .trim()
+      h.id = 'toc-' + text.replace(/[^\w\u4e00-\u9fff]+/g, '-').replace(/^-+|-+$/g, '').toLowerCase()
+    })
+  }
+}
+
+// 点击 TOC 项：平滑滚动到对应标题
+function scrollToHeading(id) {
+  activeToc.value = id
+  const el = document.getElementById(id)
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
+
+// 滚动高亮 TOC
+function onScroll() {
+  if (!toc.value.length || !contentRef.value) return
+  const headings = contentRef.value.querySelectorAll('h2[id], h3[id]')
+  let current = ''
+  for (const h of headings) {
+    const rect = h.getBoundingClientRect()
+    if (rect.top <= 120) current = h.id
+  }
+  activeToc.value = current
+}
+
+onMounted(() => {
+  load(route.params.id)
+  window.addEventListener('scroll', onScroll, { passive: true })
+})
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+})
+
+// 路由参数变化时重新加载
+watch(() => route.params.id, (id) => {
+  if (id) load(id)
+})
 </script>
 
 <template>
-  <div class="article-detail">
-    <div v-if="!article" class="loading">加载中</div>
-    <template v-else>
-      <a href="javascript:history.back()" class="back-link">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
-        返回
-      </a>
+  <article class="article-detail">
+    <div v-if="!article" class="loading">加载中...</div>
 
+    <template v-else>
       <header class="article-header">
+        <div class="article-category"><span class="category-dot"></span>{{ article.meta.category }}</div>
         <h1 class="article-title">{{ article.meta.title }}</h1>
         <div class="article-info">
           <span>{{ article.meta.date }}</span>
           <span class="dot"></span>
           <span>{{ article.meta.author }}</span>
-          <span class="dot"></span>
-          <span>{{ article.meta.category }}</span>
           <span class="dot"></span>
           <span>{{ article.meta.comments }}</span>
         </div>
@@ -86,31 +97,29 @@ onUnmounted(() => { if (observer) observer.disconnect(); window.removeEventListe
       <div class="article-content-wrapper">
         <div ref="contentRef" class="article-body prose" v-html="article.content"></div>
 
-        <aside v-if="toc.length" class="article-toc">
+        <nav v-if="toc.length" class="article-toc" aria-label="文章目录">
           <div class="toc-title">目录</div>
           <ul class="toc-list">
-            <li v-for="h in toc" :key="h.id" class="toc-item" :class="{ 'toc-h3': h.level === 3 }">
-              <a :href="`#${h.id}`" :class="{ 'toc-active': activeHeading === h.id }">{{ h.text }}</a>
+            <li v-for="item in toc" :key="item.id" class="toc-item" :class="`toc-h${item.level}`">
+              <a :href="`#${item.id}`" :class="{ 'toc-active': activeToc === item.id }" @click.prevent="scrollToHeading(item.id)">
+                {{ item.text }}
+              </a>
             </li>
           </ul>
-        </aside>
+        </nav>
       </div>
 
-      <div class="article-tags">
-        <span class="tag-label">标签:</span>
-        <a v-for="t in article.meta.tags" :key="t" href="#">#{{ t }}</a>
-      </div>
-
-      <nav class="article-nav" v-if="neighbors.prev || neighbors.next">
-        <div v-if="neighbors.prev" class="article-nav-item" style="text-align:left">
+      <nav v-if="navPrev || navNext" class="article-nav" aria-label="文章导航">
+        <div v-if="navNext" class="article-nav-item">
           <div class="nav-label">← 上一篇</div>
-          <RouterLink :to="`/article/${neighbors.prev.id}`">{{ neighbors.prev.title }}</RouterLink>
+          <RouterLink :to="`/article/${navNext.id}`">{{ navNext.title }}</RouterLink>
         </div>
-        <div v-if="neighbors.next" class="article-nav-item" style="text-align:right">
+        <div v-else class="article-nav-item" style="visibility:hidden"></div>
+        <div v-if="navPrev" class="article-nav-item" style="text-align:right">
           <div class="nav-label">下一篇 →</div>
-          <RouterLink :to="`/article/${neighbors.next.id}`">{{ neighbors.next.title }}</RouterLink>
+          <RouterLink :to="`/article/${navPrev.id}`">{{ navPrev.title }}</RouterLink>
         </div>
       </nav>
     </template>
-  </div>
+  </article>
 </template>
